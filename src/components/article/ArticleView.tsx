@@ -22,7 +22,19 @@ export default function ArticleView({
   primary?: boolean;
 }) {
   const category = getCategoryDisplay(article.category);
-  const author = getAuthor(article.authorSlug);
+  // Prefer the byline inlined at fetch time (the CMS correspondent); fall back
+  // to the static author map. Resolved from the Article object so this stays
+  // safe to render on both server and client (no server-only imports).
+  const author = article.authorOverride
+    ? {
+        slug: article.authorSlug,
+        name: article.authorOverride.name,
+        role: article.authorOverride.role,
+        avatar: article.authorOverride.avatar,
+        bio: article.authorOverride.bio ?? "",
+      }
+    : getAuthor(article.authorSlug);
+  const authorHref = `/reporter/${author.slug}`;
 
   const jsonLd = {
     "@context": "https://schema.org",
@@ -92,7 +104,7 @@ export default function ArticleView({
               body follow. No excerpt standfirst (it just duplicated the body
               for CMS-truncated excerpts). */}
           <div className="mt-6 flex flex-wrap items-center justify-between gap-4 border-y border-line py-4">
-            <div className="flex items-center gap-3">
+            <Link href={authorHref} className="group flex items-center gap-3">
               <Image
                 src={author.avatar}
                 alt={author.name}
@@ -101,10 +113,12 @@ export default function ArticleView({
                 className="h-11 w-11 rounded-full object-cover ring-2 ring-brand-100"
               />
               <div className="leading-tight">
-                <span className="block text-sm font-bold text-fg">{author.name}</span>
+                <span className="block text-sm font-bold text-fg group-hover:text-brand-700 dark:group-hover:text-brand-400">
+                  {author.name}
+                </span>
                 <span className="block text-xs text-fg-muted">{author.role}</span>
               </div>
-            </div>
+            </Link>
             <div className="flex flex-col gap-1 text-xs text-fg-muted sm:items-end">
               <span className="flex items-center gap-1.5">
                 <Calendar className="h-3.5 w-3.5" />
@@ -173,19 +187,31 @@ export default function ArticleView({
 
         {/* Author bio */}
         <div className="mt-8 flex gap-4 rounded-2xl border border-line p-5">
-          <Image
-            src={author.avatar}
-            alt={author.name}
-            width={64}
-            height={64}
-            className="h-16 w-16 shrink-0 rounded-full object-cover ring-2 ring-brand-100"
-          />
-          <div>
-            <span className="text-xs font-bold uppercase tracking-wider text-brand-600">
+          <Link href={authorHref} className="shrink-0">
+            <Image
+              src={author.avatar}
+              alt={author.name}
+              width={64}
+              height={64}
+              className="h-16 w-16 rounded-full object-cover ring-2 ring-brand-100"
+            />
+          </Link>
+          <div className="min-w-0">
+            <span className="text-xs font-bold uppercase tracking-wider text-brand-600 dark:text-brand-400">
               {author.role}
             </span>
-            <h3 className="text-lg font-bold text-fg">{author.name}</h3>
+            <h3 className="text-lg font-bold text-fg">
+              <Link href={authorHref} className="hover:text-brand-700 dark:hover:text-brand-400">
+                {author.name}
+              </Link>
+            </h3>
             <p className="mt-1 text-sm text-fg-muted">{author.bio}</p>
+            <Link
+              href={authorHref}
+              className="mt-2 inline-block text-xs font-bold uppercase tracking-wider text-brand-600 hover:text-brand-700 dark:text-brand-400"
+            >
+              View profile →
+            </Link>
           </div>
         </div>
       </div>

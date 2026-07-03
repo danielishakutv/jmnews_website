@@ -22,6 +22,7 @@ import OpinionStrip from "@/components/home/OpinionStrip";
 import MoreNewsFeed from "@/components/home/MoreNewsFeed";
 import WhatsAppCTA from "@/components/home/WhatsAppCTA";
 import AdBanner from "@/components/ui/AdBanner";
+import AdSlot from "@/components/promo/AdSlot";
 import ArticleCard from "@/components/article/ArticleCard";
 
 export default async function HomePage() {
@@ -74,6 +75,9 @@ export default async function HomePage() {
   return (
     <NowProvider now={now}>
       <div className="space-y-8 py-5">
+        {/* Configurable ad space (off until enabled in src/lib/promotions.ts) */}
+        <AdSlot id="home-leaderboard" className="mx-auto max-w-[1400px] px-4 lg:px-6" />
+
         {/* ───── Hero block: breaking · hero · tabbed sidebar ───── */}
         <section className="mx-auto max-w-[1400px] px-4 lg:px-6">
         <div className="grid gap-5 lg:grid-cols-12">

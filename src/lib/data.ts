@@ -131,6 +131,16 @@ export async function getMostRecentByCategory(
   return list[0];
 }
 
+/** Articles bylined to a given reporter (by authorSlug), newest first. */
+export async function getArticlesByReporter(
+  slug: string,
+  limit?: number
+): Promise<Article[]> {
+  const all = await getAllArticles();
+  const list = all.filter((a) => a.authorSlug === slug).sort(byNewest);
+  return limit ? list.slice(0, limit) : list;
+}
+
 // ── Pure helpers (no I/O — stay synchronous) ────────────────────────────────
 
 /** Resolve the display name + accent for an article's category. */

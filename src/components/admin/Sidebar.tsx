@@ -6,7 +6,9 @@ import {
   LayoutDashboard,
   Newspaper,
   Tags,
-  Users,
+  UserRound,
+  Megaphone,
+  BarChart3,
   Settings,
   ExternalLink,
 } from "lucide-react";
@@ -16,7 +18,9 @@ const NAV = [
   { href: "/admin", label: "Overview", Icon: LayoutDashboard, exact: true },
   { href: "/admin/articles", label: "Articles", Icon: Newspaper, exact: false },
   { href: "/admin/categories", label: "Categories", Icon: Tags, exact: false },
-  { href: "/admin/reporters", label: "Reporters", Icon: Users, exact: false },
+  { href: "/admin/reporters", label: "Reporter", Icon: UserRound, exact: false },
+  { href: "/admin/promotions", label: "Popups & Ads", Icon: Megaphone, exact: false },
+  { href: "/admin/analytics", label: "Analytics", Icon: BarChart3, exact: false },
   { href: "/admin/settings", label: "Settings", Icon: Settings, exact: false },
 ] as const;
 

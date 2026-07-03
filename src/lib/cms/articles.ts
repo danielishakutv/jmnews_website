@@ -7,6 +7,7 @@ import {
   fetchCmsPostsByTag,
 } from "./queries/posts";
 import { htmlToText, htmlToParagraphs, readTime, tidyExcerpt } from "./html";
+import { defaultReporter } from "@/lib/reporter";
 
 /**
  * Adapt WP posts to the existing `Article` shape so consumers (ArticleCard,
@@ -71,7 +72,6 @@ function postToArticle(p: PostLike): Article {
     .filter((n): n is string => Boolean(n));
   const allText = excerpt + " " + content.join(" ");
   const featuredImg = p.featuredImage?.node;
-  const wpAuthor = p.author?.node;
   return {
     slug: p.slug ?? "",
     title,
@@ -79,19 +79,15 @@ function postToArticle(p: PostLike): Article {
     content,
     category: cat?.slug ?? "news",
     tags,
-    authorSlug: wpAuthor?.slug ?? "newsroom",
-    // Inline the WP author so bylines render the actual reporter, not the
-    // static "JM Newsroom" fallback. Static articles leave this undefined.
-    authorOverride: wpAuthor?.name
-      ? {
-          name: htmlToText(wpAuthor.name),
-          // No editorial role field in WP yet — Phase 5 (Reporters) adds
-          // custom roles + ACF for proper job titles. Reasonable default.
-          role: "Reporter",
-          avatar: wpAuthor.avatar?.url ?? "/og.png",
-          bio: htmlToText(wpAuthor.description ?? ""),
-        }
-      : undefined,
+    // Every article is bylined to the newsroom's correspondent (see
+    // src/lib/reporter.ts). Edit that config to change the byline everywhere.
+    authorSlug: defaultReporter.slug,
+    authorOverride: {
+      name: defaultReporter.name,
+      role: defaultReporter.role,
+      avatar: defaultReporter.avatar,
+      bio: defaultReporter.bio,
+    },
     image: featuredImg?.sourceUrl ?? "/og.png",
     imageCaption:
       htmlToText(featuredImg?.caption ?? "") ||
@@ -99,6 +95,7 @@ function postToArticle(p: PostLike): Article {
     publishedAt: p.date ?? new Date().toISOString(),
     readTime: readTime(allText),
     featured: p.isSticky ?? false,
+    dateline: defaultReporter.dateline,
   };
 }
 

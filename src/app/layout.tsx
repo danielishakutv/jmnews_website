@@ -6,6 +6,8 @@ import Header from "@/components/layout/Header";
 import BreakingTicker from "@/components/layout/BreakingTicker";
 import TopicChips from "@/components/ui/TopicChips";
 import Footer from "@/components/layout/Footer";
+import PromoPopup from "@/components/promo/PromoPopup";
+import Matomo from "@/components/analytics/Matomo";
 import { getSite } from "@/lib/cms/site";
 import { cmsFlags } from "@/lib/cms/flags";
 import { getCmsNavCategories } from "@/lib/cms/categories";
@@ -182,7 +184,9 @@ export default async function RootLayout({
         </main>
         <div data-public-chrome>
           <Footer />
+          <PromoPopup />
         </div>
+        <Matomo />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(orgJsonLd) }}

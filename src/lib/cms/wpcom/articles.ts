@@ -2,6 +2,7 @@ import "server-only";
 import type { Article } from "@/lib/types";
 import { htmlToText, htmlToParagraphs, readTime, tidyExcerpt } from "../html";
 import { wpcomFetch, WpcomError } from "./client";
+import { defaultReporter } from "@/lib/reporter";
 
 /**
  * Adapt WordPress.com REST posts to the existing `Article` shape so every
@@ -66,12 +67,6 @@ function pickCategory(cats?: Record<string, WpcomTerm>): string {
   return CAT_TO_SITE[slug] ?? slug;
 }
 
-function authorName(a?: WpcomAuthor): string {
-  if (!a) return "JM Newsroom";
-  const full = [a.first_name, a.last_name].filter(Boolean).join(" ").trim();
-  return htmlToText(full || a.name || "JM Newsroom");
-}
-
 function postToArticle(p: WpcomPost): Article {
   const title = htmlToText(p.title ?? "");
   const excerpt = tidyExcerpt(htmlToText(p.excerpt ?? ""));
@@ -81,7 +76,6 @@ function postToArticle(p: WpcomPost): Article {
         .map((t) => t.name)
         .filter((n): n is string => Boolean(n))
     : [];
-  const a = p.author;
   const allText = excerpt + " " + content.join(" ");
   return {
     slug: p.slug ?? "",
@@ -90,19 +84,20 @@ function postToArticle(p: WpcomPost): Article {
     content,
     category: pickCategory(p.categories),
     tags,
-    authorSlug: a?.nice_name ?? a?.login ?? "newsroom",
-    // Inline the WP.com author so bylines render the real reporter.
+    // Bylined to the newsroom correspondent (see src/lib/reporter.ts).
+    authorSlug: defaultReporter.slug,
     authorOverride: {
-      name: authorName(a),
-      role: "Reporter",
-      avatar: a?.avatar_URL || "/og.png",
-      bio: "",
+      name: defaultReporter.name,
+      role: defaultReporter.role,
+      avatar: defaultReporter.avatar,
+      bio: defaultReporter.bio,
     },
     image: p.featured_image || "/og.png",
     imageCaption: "",
     publishedAt: p.date ?? new Date().toISOString(),
     readTime: readTime(allText),
     featured: p.sticky ?? false,
+    dateline: defaultReporter.dateline,
   };
 }
 
