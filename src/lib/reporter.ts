@@ -36,7 +36,7 @@ export const reporters: Reporter[] = [
     // Ojoma's Gravatar (from her WordPress account). Replace with a real
     // uploaded headshot URL for a sharper profile photo.
     avatar:
-      "https://0.gravatar.com/avatar/4966385538113b4f7ff4062cb2f429f014ba7489e8432aba83fceb19a59da4f9?s=512&d=mp",
+      "https://menorah.com.ng/wp-content/uploads/2026/07/ojoma.jpg",
     bio: "Ojoma Yusuf is a correspondent based in Yola, reporting on Adamawa State and Nigeria's Northeast.",
     longBio:
       "Ojoma Yusuf reports from Yola on the stories shaping Adamawa State and the wider Northeast — security and policing, politics and governance, humanitarian affairs, health, education and the everyday lives of communities across the region. Her on-the-ground reporting brings the newsroom's coverage to readers across Nigeria and beyond.",

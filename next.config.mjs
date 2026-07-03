@@ -23,6 +23,9 @@ const nextConfig = {
   },
   experimental: {
     optimizePackageImports: ["lucide-react"],
+    // Featured-image uploads flow through the article-editor server action;
+    // the default 1MB cap is too small for real news photos.
+    serverActions: { bodySizeLimit: "12mb" },
   },
 };
 

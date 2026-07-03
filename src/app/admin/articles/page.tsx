@@ -14,8 +14,6 @@ export const metadata: Metadata = {
 
 export const dynamic = "force-dynamic";
 
-const wpBase = process.env.WP_GRAPHQL_URL?.trim().replace(/\/graphql\/?$/i, "") ?? "";
-
 export default async function AdminArticles() {
   await requireSession();
 
@@ -33,16 +31,12 @@ export default async function AdminArticles() {
         description="Your latest published stories, live from WordPress."
         Icon={Newspaper}
         action={
-          wpBase ? (
-            <a
-              href={`${wpBase}/wp-admin/post-new.php`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex h-10 items-center gap-2 rounded-lg bg-brand-700 px-4 text-sm font-bold text-white transition-colors hover:bg-brand-800"
-            >
-              <Plus className="h-4 w-4" /> New article
-            </a>
-          ) : undefined
+          <Link
+            href="/admin/articles/new"
+            className="inline-flex h-10 items-center gap-2 rounded-lg bg-brand-700 px-4 text-sm font-bold text-white transition-colors hover:bg-brand-800"
+          >
+            <Plus className="h-4 w-4" /> New article
+          </Link>
         }
       />
 
