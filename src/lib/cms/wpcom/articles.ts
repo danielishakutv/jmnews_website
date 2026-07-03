@@ -1,7 +1,7 @@
 import "server-only";
 import type { Article } from "@/lib/types";
 import { htmlToText, htmlToParagraphs, readTime, tidyExcerpt } from "../html";
-import { wpcomFetch } from "./client";
+import { wpcomFetch, WpcomError } from "./client";
 
 /**
  * Adapt WordPress.com REST posts to the existing `Article` shape so every
@@ -122,12 +122,20 @@ export async function getWpcomAllArticles(limit = 24): Promise<Article[]> {
 }
 
 export async function getWpcomArticleBySlug(slug: string): Promise<Article | undefined> {
-  const post = await wpcomFetch<WpcomPost>(
-    `/posts/slug:${encodeURIComponent(slug)}`,
-    { fields: DETAIL_FIELDS },
-    { revalidate: 120, tags: [`wpcom:article:${slug}`] }
-  );
-  return post && post.slug ? postToArticle(post) : undefined;
+  try {
+    const post = await wpcomFetch<WpcomPost>(
+      `/posts/slug:${encodeURIComponent(slug)}`,
+      { fields: DETAIL_FIELDS },
+      { revalidate: 120, tags: [`wpcom:article:${slug}`] }
+    );
+    return post && post.slug ? postToArticle(post) : undefined;
+  } catch (err) {
+    // A 404 just means this slug isn't a post on this source — expected in a
+    // blended dual-source setup, so treat it as "not found" quietly. Genuine
+    // failures (5xx, network) still throw and get logged by the aggregator.
+    if (err instanceof WpcomError && / 404\b/.test(err.message)) return undefined;
+    throw err;
+  }
 }
 
 export async function getWpcomArticlesByCategory(slug: string, limit = 12): Promise<Article[]> {
