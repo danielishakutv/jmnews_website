@@ -3,6 +3,7 @@
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { SESSION_COOKIE } from "./session";
+import { signToken } from "./crypto";
 
 /**
  * Login server action.
@@ -83,7 +84,8 @@ export async function loginAction(
     avatarUrl: wpUser.avatar_urls?.["96"] ?? null,
     exp: Date.now() + SESSION_TTL_SECONDS * 1000,
   };
-  const cookieValue = Buffer.from(JSON.stringify(payload)).toString("base64");
+  // Sign the payload so the cookie can't be forged from the public source.
+  const cookieValue = signToken(Buffer.from(JSON.stringify(payload)).toString("base64"));
 
   const store = await cookies();
   store.set(SESSION_COOKIE, cookieValue, {

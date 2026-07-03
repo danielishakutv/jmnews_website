@@ -1,6 +1,7 @@
 import "server-only";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
+import { verifyToken } from "./crypto";
 
 /**
  * Dashboard session.
@@ -36,11 +37,17 @@ export async function getSession(): Promise<DashboardUser | null> {
   if (!raw) return null;
 
   try {
-    // STUB: until JWT lands, the cookie carries a base64 JSON blob with
-    // {username, name, role}. The login form sets this; nothing here yet
-    // signs/verifies it — that's intentional and replaced in Phase 2 final.
-    const decoded = JSON.parse(Buffer.from(raw, "base64").toString("utf8"));
+    // The cookie is `base64(JSON).hmac`. Verify the signature first — an
+    // unsigned/forged cookie (e.g. one hand-crafted from the public source)
+    // fails here and is rejected. The login action mints the signed value.
+    const payloadB64 = verifyToken(raw);
+    if (!payloadB64) return null;
+
+    const decoded = JSON.parse(Buffer.from(payloadB64, "base64").toString("utf8"));
     if (!decoded?.username) return null;
+    // Reject expired sessions.
+    if (typeof decoded.exp === "number" && Date.now() > decoded.exp) return null;
+
     return {
       id: String(decoded.id ?? ""),
       username: String(decoded.username),
