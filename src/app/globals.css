@@ -1,0 +1,267 @@
+@import "tailwindcss";
+
+/* Class-based dark mode: `dark:` applies inside `.dark` (set on <html>). */
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme inline {
+  /* ── Typography (all sans-serif) ─────────────────────────────────────── */
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-display: var(--font-display-face), var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+
+  /* ── Semantic, theme-reactive surfaces & text ────────────────────────── */
+  /* Values live in :root / .dark below, so these flip at runtime. */
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-surface-3: var(--surface-3);
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+  --color-fg: var(--fg);
+  --color-fg-muted: var(--fg-muted);
+  --color-fg-subtle: var(--fg-subtle);
+
+  /* Fixed dark "chrome" surface (top bar, footer, opinion strip) — stays
+     dark in both themes by design. Separate token from text colour so it
+     never flips. */
+  --color-ink: #0b1018;
+  --color-ink-soft: #161c27;
+
+  /* ── Brand orange ────────────────────────────────────────────────────── */
+  --color-brand-50: #fff7ed;
+  --color-brand-100: #ffedd5;
+  --color-brand-200: #fed7aa;
+  --color-brand-300: #fdba74;
+  --color-brand-400: #fb923c;
+  --color-brand-500: #f97316;
+  --color-brand-600: #ea580c;
+  --color-brand-700: #c2410c;
+  --color-brand-800: #9a3412;
+  --color-brand-900: #7c2d12;
+
+  /* ── Touch-of-blue accent ────────────────────────────────────────────── */
+  --color-azure-50: #eff6ff;
+  --color-azure-100: #dbeafe;
+  --color-azure-200: #bfdbfe;
+  --color-azure-300: #93c5fd;
+  --color-azure-400: #60a5fa;
+  --color-azure-500: #3b82f6;
+  --color-azure-600: #2563eb;
+  --color-azure-700: #1d4ed8;
+  --color-azure-800: #1e3a8a;
+  --color-azure-900: #172554;
+
+  /* Live red — darkened so red-on-white text clears WCAG AA (4.5:1). */
+  --color-live: #c8102e;
+
+  --breakpoint-xs: 25rem;
+
+  /* Soft radius scale */
+  --radius-xl: 0.875rem;
+  --radius-2xl: 1.125rem;
+}
+
+/* ── Theme value sets ───────────────────────────────────────────────────── */
+:root {
+  color-scheme: light;
+
+  --bg: #f4f5f7;
+  --surface: #ffffff;
+  --surface-2: #eef0f3;
+  --surface-3: #e3e6ea;
+  --line: #e7e9ee;
+  --line-strong: #d6dae1;
+  --fg: #0c1320;
+  --fg-muted: #59636f;
+  --fg-subtle: #6b7280;
+}
+
+.dark {
+  color-scheme: dark;
+
+  --bg: #0a0c11;
+  --surface: #13161e;
+  --surface-2: #1b1f29;
+  --surface-3: #242a36;
+  --line: #232a37;
+  --line-strong: #323a49;
+  --fg: #eef1f6;
+  --fg-muted: #9aa4b2;
+  --fg-subtle: #6b7484;
+}
+
+/* ───────────────────────── Base ───────────────────────── */
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    background-color: var(--bg);
+    color: var(--fg);
+    font-family: var(--font-sans);
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* Smooth, contained theme transition (skips images/media to avoid flashes). */
+  body,
+  header,
+  footer,
+  aside,
+  section,
+  article,
+  nav,
+  input,
+  button {
+    transition:
+      background-color 0.25s ease,
+      border-color 0.25s ease,
+      color 0.2s ease;
+  }
+
+  h1, h2, h3, h4 {
+    font-family: var(--font-display);
+    text-wrap: balance;
+    letter-spacing: -0.02em;
+  }
+
+  a {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  ::selection {
+    background-color: var(--color-brand-500);
+    color: #fff;
+  }
+}
+
+/* ───────────────────────── Utilities ───────────────────────── */
+@layer utilities {
+  .font-display {
+    font-family: var(--font-display);
+    letter-spacing: -0.02em;
+  }
+
+  /* Soft, modern elevation — barely-there in light, carried by borders in dark. */
+  .shadow-soft {
+    box-shadow:
+      0 1px 2px rgba(12, 19, 32, 0.04),
+      0 6px 20px rgba(12, 19, 32, 0.06);
+  }
+  .shadow-soft-lg {
+    box-shadow:
+      0 2px 8px rgba(12, 19, 32, 0.06),
+      0 18px 40px rgba(12, 19, 32, 0.12);
+  }
+
+  /* Multi-line clamps */
+  .clamp-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .clamp-3 {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .clamp-4 {
+    display: -webkit-box;
+    -webkit-line-clamp: 4;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  /* Hide scrollbars on horizontal rails while keeping scroll */
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  .gradient-overlay {
+    background-image: linear-gradient(
+      to top,
+      rgba(8, 12, 20, 0.92) 0%,
+      rgba(8, 12, 20, 0.55) 38%,
+      rgba(8, 12, 20, 0.05) 75%,
+      rgba(8, 12, 20, 0) 100%
+    );
+  }
+}
+
+/* ───────────────────────── Animations ───────────────────────── */
+@keyframes jm-marquee {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+.animate-marquee {
+  animation: jm-marquee 40s linear infinite;
+}
+.marquee-pause:hover .animate-marquee {
+  animation-play-state: paused;
+}
+
+@keyframes jm-pulse-dot {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.45; transform: scale(0.82); }
+}
+.animate-live-dot {
+  animation: jm-pulse-dot 1.3s ease-in-out infinite;
+}
+
+@keyframes jm-fade-up {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.animate-fade-up {
+  animation: jm-fade-up 0.5s ease both;
+}
+
+@keyframes jm-slide-in-left {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(0); }
+}
+.animate-slide-in-left {
+  animation: jm-slide-in-left 0.28s ease-out both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-marquee,
+  .animate-live-dot,
+  .animate-fade-up,
+  .animate-slide-in-left {
+    animation: none !important;
+  }
+  html {
+    scroll-behavior: auto;
+  }
+  body, header, footer, aside, section, article, nav, input, button {
+    transition: none !important;
+  }
+}
+
+/* Custom scrollbar (desktop) — theme-aware */
+@media (pointer: fine) {
+  ::-webkit-scrollbar {
+    width: 11px;
+    height: 11px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: var(--line-strong);
+    border-radius: 9999px;
+    border: 3px solid var(--bg);
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--color-brand-400);
+  }
+}

@@ -1,0 +1,224 @@
+================================================================================
+JM NEWS — HEADLESS WORDPRESS + CUSTOM DASHBOARD: WORK PLAN
+================================================================================
+
+TARGET ARCHITECTURE (THE END STATE)
+--------------------------------------------------------------------------------
+
+    ┌────────────────────────────┐        ┌─────────────────────────────┐
+    │  WordPress (Headless CMS)  │        │  Custom Admin Dashboard     │
+    │  ─ wp-admin (still works)  │◀──────▶│  ─ Next.js route group      │
+    │  ─ WPGraphQL endpoint      │  GQL   │  ─ Auth'd (JWT / App Pass)  │
+    │  ─ ACF / custom post types │  R+W   │  ─ Role-gated UI            │
+    │  ─ Users = reporters       │        └─────────────────────────────┘
+    └────────────────────────────┘
+                  ▲
+                  │ GraphQL (read only, ISR + on-demand revalidate)
+                  │
+    ┌────────────────────────────┐
+    │  Public Next.js news site  │
+    │  (this project)            │
+    └────────────────────────────┘
+
+
+KEY DESIGN DECISIONS (recommended; flag any you want to change)
+--------------------------------------------------------------------------------
+
+  CMS                  Keep WordPress + WPGraphQL
+                       Why: chosen already; mature, free, editorial-team-friendly.
+
+  Dashboard hosting    Same Next.js app, behind app/(dashboard)/ route group
+                       Why: one deploy, shared design system & types; split to
+                       its own subdomain only if/when team grows.
+
+  Auth                 WPGraphQL JWT Authentication plugin, with Auth.js wrapping
+                       Why: stateless, standard, works for SSR.
+
+  Type safety          GraphQL Codegen (@graphql-codegen/cli + client-preset)
+                       Why: generated typed hooks; no drift.
+
+  Writes from dash     GraphQL mutations + Next.js Server Actions
+                       Why: server-side secret handling, RSC-friendly.
+
+  Cache invalidation   ACF/post hooks in WP → POST to /api/revalidate in Next
+                       Why: editors see changes in seconds, site stays static-fast.
+
+  Image hosting        WP media library, served via WP CDN (or offload to S3/R2)
+                       Why: one source of truth.
+
+  Editor in dashboard  Tiptap (Phase 6) writing back to WP as Gutenberg/HTML
+                       Why: modern UX without breaking wp-admin.
+
+
+================================================================================
+PHASED ROLLOUT
+================================================================================
+
+Each phase is self-contained. After every phase, the site, wp-admin, and any
+already-built dashboard module all keep working — no big-bang cutover.
+
+
+PHASE 0 — FOUNDATIONS (1–2 days)
+--------------------------------------------------------------------------------
+Goal: prove the GraphQL pipeline end-to-end with one trivial read; no UI change.
+
+  WordPress
+    - Install: wp-graphql, wp-graphql-acf, wp-graphql-jwt-authentication,
+      wp-graphql-cors, wpgraphql-smart-cache.
+    - Set JWT_AUTH_SECRET_KEY in wp-config.php.
+
+  Next.js
+    - Add graphql-request + @graphql-codegen/cli + @graphql-codegen/client-preset.
+    - New folder src/lib/cms/ with: client.ts, queries/, generated/.
+    - Add env: WP_GRAPHQL_URL, WP_GRAPHQL_PREVIEW_SECRET, REVALIDATE_SECRET.
+    - Replace ONE small read (e.g. site.name or a single category) with a
+      GraphQL fetch behind a feature flag (NEXT_PUBLIC_USE_CMS=false default).
+
+  Deliverable
+    - Green CI, `pnpm codegen` works, smoke page /dev/graphql-ping reads from WP.
+
+
+PHASE 1 — PUBLIC SITE READS FROM WP (3–5 days, in sub-steps)
+--------------------------------------------------------------------------------
+Goal: stop using src/lib/articles.ts static data; site is fully CMS-driven.
+      Still no dashboard yet.
+
+Sub-phases, each behind the same feature flag, flipped per data type:
+
+  1. Site settings (org name, socials, WhatsApp channel)
+       → ACF Options Page → replaces src/lib/site.ts.
+
+  2. Categories
+       → WP categories → replaces src/lib/categories.ts.
+
+  3. Authors / Reporters
+       → WP users + ACF user fields → replaces src/lib/authors.ts.
+
+  4. Articles
+       → WP posts with featured image, excerpt, tags, ACF fields (dateline,
+         live, trending, featured) → replaces src/lib/articles.ts and all
+         data accessors.
+
+  5. On-demand revalidation
+       → 30-line mu-plugin in WP calls POST /api/revalidate on save/update/delete.
+       → Tag-based revalidation: tag:home, tag:article:<slug>, tag:category:<slug>.
+
+After this phase: wp-admin is the single source of truth. Publish from wp-admin,
+changes appear on the site in seconds. No custom dashboard yet — but the
+editorial workflow already works.
+
+
+PHASE 2 — DASHBOARD SHELL + AUTHENTICATION (2–3 days)
+--------------------------------------------------------------------------------
+Goal: a locked door with a login screen and an empty admin shell. No data yet.
+
+  - Promote /login → /dashboard/login, wire it to WPGraphQL JWT (login mutation)
+    via Auth.js Credentials provider.
+  - New route group src/app/(dashboard)/dashboard/ with middleware that 302s to
+    login if no session.
+  - Persistent layout: sidebar (Overview, Articles, Categories, Reporters,
+    Settings), top bar (user menu, sign out).
+  - Role gating utility: requireRole('editor' | 'admin') server-side.
+
+  Deliverable
+    - Log in with a real WP user, see an empty "Overview" page, get redirected
+      if not signed in.
+
+
+PHASE 3 — ORGANISATION SETTINGS MODULE (2 days)
+--------------------------------------------------------------------------------
+Goal: first writable module — lowest blast radius.
+
+  - ACF Options Page in WP for: name, tagline, description, contact email/phone,
+    address, WhatsApp channel URL, all social handles.
+  - Expose via wp-graphql-acf (installed in Phase 0).
+  - Dashboard page: /dashboard/settings with form bound to the GraphQL query;
+    submit via a Server Action that calls the mutation.
+  - Public site picks up changes on next revalidation tick (cache-tag invalidation).
+
+  Deliverable
+    - Edit the WhatsApp channel link from the dashboard, see it update on the
+      home WhatsApp CTA within seconds.
+
+
+PHASE 4 — CATEGORIES MODULE (1–2 days)
+--------------------------------------------------------------------------------
+  - List / create / rename / reorder / delete WP categories from the dashboard.
+  - Soft delete: WP's "Uncategorized" fallback handles orphaned posts; dashboard
+    surfaces a confirmation modal listing affected post count.
+
+  Deliverable
+    - Full CRUD on categories.
+
+
+PHASE 5 — REPORTERS & ROLES MODULE (2–3 days)
+--------------------------------------------------------------------------------
+  - Read WP users with role = author/editor plus custom roles (reporter,
+    senior_reporter).
+  - Create new reporter accounts (mutation: registerUser), send invitation
+    email via WP, assign role.
+  - Custom WP roles installed once via a small mu-plugin (add_role()); dashboard
+    never invents capabilities.
+  - Audit log (Phase 7) starts logging here.
+
+  Deliverable
+    - Add a reporter, change their role, deactivate them, all without touching
+      wp-admin.
+
+
+PHASE 6 — ARTICLES MODULE (1–2 weeks — the largest)
+--------------------------------------------------------------------------------
+This is the only phase that warrants further breakdown when you reach it.
+
+  - List view: filterable by status (draft/scheduled/published), category, author,
+    date.
+  - Editor: Tiptap with the same content model WP uses (blocks → HTML or
+    vice-versa). Featured image picker hits WP media. Tags, category, ACF fields
+    (dateline, live, trending, featured).
+  - Lifecycle: save draft → schedule → publish → unpublish → trash. Each is a
+    WP mutation; WP handles revisions natively.
+  - Preview: Next.js Draft Mode + a one-shot signed preview link from the
+    dashboard so writers see the article in the live site's layout before publish.
+  - Image uploads: through WP REST (/wp/v2/media) using the same JWT.
+
+After this phase, the dashboard is at parity with wp-admin for editorial work.
+wp-admin remains available as the fallback.
+
+
+PHASE 7 — HARDENING & OPS (ongoing, 3–5 days focused work)
+--------------------------------------------------------------------------------
+  - Audit log: every dashboard write logs {actor, action, entity, before, after,
+    ip, ts} to a WP CPT or a small Postgres table.
+  - Observability: Sentry on both Next apps + WP error log shipping.
+  - Backups: nightly WP DB + media snapshot; tested restore procedure documented.
+  - Security: rate-limit /api/revalidate and login; rotate JWT secret;
+    HTTPS-only cookies; CSP; WPGraphQL query complexity limits enabled.
+  - Performance: Smart Cache verified, Lighthouse budgets in CI.
+
+
+================================================================================
+WHAT TO DO FIRST (PHASE 0, CONCRETELY)
+================================================================================
+
+  1. Confirm where WordPress will live (existing host, or need a recommendation?).
+  2. Confirm: dashboard inside this Next.js app (recommended) or a separate
+     repo/app?
+  3. Install the WPGraphQL plugin set and document the exact wp-config.php
+     additions and env vars needed.
+  4. Add GraphQL Codegen to this project and ship the /dev/graphql-ping smoke
+     check behind the feature flag.
+
+Nothing user-visible changes in Phase 0 — but at the end there's a typed, tested
+pipeline from WP to this site, ready for Phase 1 to start swapping data sources
+one at a time.
+
+
+TWO QUESTIONS BEFORE STARTING PHASE 0
+--------------------------------------------------------------------------------
+  1. Is the WordPress instance already provisioned (URL + admin access), or do
+     I need to spec the install?
+  2. Same-app dashboard route group (recommended) or separate dashboard
+     app/subdomain?
+
+Once those are answered, execute Phase 0 end-to-end in a single pass and stop
+for review before Phase 1.

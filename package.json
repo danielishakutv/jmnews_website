@@ -1,0 +1,37 @@
+{
+  "name": "jm-news",
+  "version": "1.0.0",
+  "private": true,
+  "description": "JM News — modern Nigerian & international news platform",
+  "scripts": {
+    "dev": "next dev",
+    "dev:turbo": "next dev --turbopack",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "codegen": "graphql-codegen --config codegen.ts",
+    "codegen:watch": "graphql-codegen --config codegen.ts --watch"
+  },
+  "dependencies": {
+    "embla-carousel-autoplay": "^8.5.2",
+    "embla-carousel-react": "^8.5.2",
+    "graphql": "^16.14.0",
+    "graphql-request": "^7.4.0",
+    "lucide-react": "^0.469.0",
+    "next": "15.1.6",
+    "react": "19.0.0",
+    "react-dom": "19.0.0"
+  },
+  "devDependencies": {
+    "@graphql-codegen/cli": "^7.0.0",
+    "@graphql-codegen/client-preset": "^6.0.0",
+    "@tailwindcss/postcss": "^4.0.0",
+    "@types/node": "^22.10.7",
+    "@types/react": "^19.0.7",
+    "@types/react-dom": "^19.0.3",
+    "dotenv": "^17.4.2",
+    "tailwindcss": "^4.0.0",
+    "tsx": "^4.22.3",
+    "typescript": "^5.7.3"
+  }
+}
