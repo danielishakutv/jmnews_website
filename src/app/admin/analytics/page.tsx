@@ -5,6 +5,7 @@ import AdminHeader from "@/components/admin/AdminHeader";
 import { getAllArticles } from "@/lib/data";
 import { getCmsAllCategories } from "@/lib/cms/categories";
 import { cmsFlags, wpcomConfig } from "@/lib/cms/flags";
+import { matomoConfigured, matomoDashboardUrl, MATOMO_SITE_ID } from "@/lib/matomo";
 
 export const metadata: Metadata = {
   title: "Analytics",
@@ -12,9 +13,6 @@ export const metadata: Metadata = {
 };
 
 export const dynamic = "force-dynamic";
-
-const MATOMO_URL = process.env.NEXT_PUBLIC_MATOMO_URL;
-const SITE_ID = process.env.NEXT_PUBLIC_MATOMO_SITE_ID;
 
 async function safeLen<T>(p: Promise<T[]>): Promise<number> {
   try {
@@ -27,11 +25,8 @@ async function safeLen<T>(p: Promise<T[]>): Promise<number> {
 export default async function AdminAnalytics() {
   await requireSession();
 
-  const configured = Boolean(MATOMO_URL && SITE_ID);
-  const matomoBase = MATOMO_URL?.replace(/\/$/, "");
-  const dashUrl = configured
-    ? `${matomoBase}/index.php?module=CoreHome&action=index&idSite=${SITE_ID}&period=day&date=today`
-    : "https://matomo.org/";
+  const configured = matomoConfigured;
+  const dashUrl = configured ? matomoDashboardUrl() : "https://matomo.org/";
 
   const [articleCount, categoryCount] = await Promise.all([
     safeLen(getAllArticles()),
@@ -61,7 +56,7 @@ export default async function AdminAnalytics() {
         <div className="mb-8 flex items-start gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
           <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0" />
           <span>
-            Matomo is tracking this site (site&nbsp;#{SITE_ID}). Open the full dashboard for
+            Matomo is tracking this site (site&nbsp;#{MATOMO_SITE_ID}). Open the full dashboard for
             visitors, page views, sources, devices and real-time data.
           </span>
         </div>
