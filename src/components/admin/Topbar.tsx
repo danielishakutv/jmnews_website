@@ -39,7 +39,7 @@ export default function Topbar({
 
         {/* User menu (server-rendered button; turn into a dropdown when needed) */}
         <div className="flex items-center gap-2.5 rounded-full border border-line bg-surface py-1 pl-1 pr-3 shadow-sm">
-          <span className="grid h-7 w-7 place-items-center rounded-full bg-brand-600 text-[11px] font-bold text-white">
+          <span className="grid h-7 w-7 place-items-center rounded-full bg-brand-700 text-[11px] font-bold text-white">
             {initials || "JM"}
           </span>
           <div className="leading-tight">

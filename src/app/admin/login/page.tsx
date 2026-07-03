@@ -30,7 +30,7 @@ export default async function LoginPage({
       <div className="w-full max-w-md">
         <div className="mb-6 text-center">
           <Link href="/" aria-label={`${site.name} home`} className="inline-flex items-center gap-2.5">
-            <span className="grid h-11 w-11 place-items-center rounded-lg bg-brand-600 font-display text-xl font-black text-white shadow-sm">
+            <span className="grid h-11 w-11 place-items-center rounded-lg bg-brand-700 font-display text-xl font-black text-white shadow-sm">
               JM
             </span>
             <span className="font-display text-2xl font-black tracking-tight text-fg">

@@ -33,7 +33,7 @@ export default function Sidebar() {
     <aside className="fixed inset-y-0 left-0 z-30 hidden w-60 flex-col border-r border-line bg-surface lg:flex">
       {/* Brand */}
       <Link href="/admin" className="flex h-16 items-center gap-2.5 border-b border-line px-5">
-        <span className="grid h-9 w-9 place-items-center rounded-lg bg-brand-600 font-display text-lg font-black text-white shadow-sm">
+        <span className="grid h-9 w-9 place-items-center rounded-lg bg-brand-700 font-display text-lg font-black text-white shadow-sm">
           JM
         </span>
         <div className="leading-none">

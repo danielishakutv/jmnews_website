@@ -98,7 +98,7 @@ export default async function ReporterPage({
               className="h-32 w-32 shrink-0 rounded-2xl object-cover shadow-soft ring-1 ring-line sm:h-36 sm:w-36"
             />
             <div className="min-w-0 flex-1">
-              <span className="inline-flex items-center rounded-full bg-brand-600 px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-white">
+              <span className="inline-flex items-center rounded-full bg-brand-700 px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-white">
                 {reporter.role}
               </span>
               <h1 className="mt-3 font-display text-3xl font-black tracking-tight text-fg sm:text-4xl">
